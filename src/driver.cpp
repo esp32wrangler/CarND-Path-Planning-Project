@@ -131,15 +131,18 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
       dist_to_other = car_s + 6945.56-other_s;
     }
 
-    std::cout << other_lane << ", " << std::setw(10) << other_d << " " << std::setw(10) << other_s << " " << std::setw(10) << other_speed << " " << std::setw(10) << dist_to_other << std::endl;
+//    std::cout << other_lane << ", " << std::setw(10) << other_d << " " << std::setw(10) << other_s << " " << std::setw(10) << other_speed << " " << std::setw(10) << dist_to_other << std::endl;
 
 //    std::cout << "other s" << other_s << " other speed " << other_speed << " distance " << other_s - car_s << std::endl;
 
     carpos[other_lane].push_back(dist_to_other);
     if (other_s > car_s-10) {
-      if (dist_to_other < 50) // if there is a slow car just beyond the horizon, give a chance to pass the car in front and get back to our lane
+      if (dist_to_other < 60) // if there is a slow car just beyond the 30 m limit, give a chance to pass the car in front and get back to our lane
       {
-        lane_speeds[other_lane] = other_speed;
+        if (other_speed < lane_speeds[other_lane])
+        {
+          lane_speeds[other_lane] = other_speed;
+        }
       }
       if (dist_to_other < 30)
       {
@@ -180,7 +183,7 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
     }
   }
   
-  std::cout << "Lane speeds: ";
+  /*std::cout << "Lane speeds: ";
   for (int i : {0, 1, 2})
   {
     std::cout << lane_speeds[i] << " (" << lane_available[i] << ") " ;
@@ -195,11 +198,10 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
       std::cout << item << ", ";
     }
     std::cout << std::endl;
-  }
+  }*/
   
   if (car_in_front)
   {
-    std::cout << "car in front ";
     bool lane_change = false;
     for (int alt_lane : {lane+1, lane-1})
     {
@@ -207,24 +209,20 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
       int best_lane = lane;
       if (alt_lane < 3 and alt_lane >= 0)
       {
-        std::cout << "al " << alt_lane;
         if (lane_speeds[alt_lane] > best_speed && lane_available[alt_lane])
         {
           best_speed = lane_speeds[alt_lane];
           best_lane = alt_lane;
-          std::cout << " bs " << best_speed;
         }
       }
       if (best_lane != lane)
       {
-          std::cout << " changed " << alt_lane;
           lane = alt_lane;
           lane_change = true;
       }
     }
     if (!lane_change)
     {
-      std::cout << " bumpybumpy " << avoidance_speed;
       target_speed = avoidance_speed;
       speed_urgency = avoidance_urgency;
     }
@@ -234,7 +232,7 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
     target_speed = ref_speed;
     speed_urgency = 0.5;
   }
-  std::cout << std::endl;
+//  std::cout << std::endl;
   
   double ref_x = car_x;
   double ref_y = car_y;

@@ -1,145 +1,42 @@
-# CarND-Path-Planning-Project
-Self-Driving Car Engineer Nanodegree Program
-   
-### Simulator.
-You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2).  
+# **Path Planning Project**
 
-To run the simulator on Mac/Linux, first make the binary file executable with the following command:
-```shell
-sudo chmod u+x {simulator_file_name}
-```
 
-### Goals
-In this project your goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. You will be provided the car's localization and sensor fusion data, there is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible, note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
+**The goals / steps of this project are the following:**
+The goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. The simulator provides the car's localization and sensor fusion data, there is also a sparse map list of waypoints around the highway. The goal is to get the car to drive as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
 
-#### The map of the highway is in data/highway_map.txt
-Each waypoint in the list contains  [x,y,s,dx,dy] values. x and y are the waypoint's map coordinate position, the s value is the distance along the road to get to that waypoint in meters, the dx and dy values define the unit normal vector pointing outward of the highway loop.
+This project uses the Term 3 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2). See README_orig.md for getting the environment up and running.
 
-The highway's waypoints loop around so the frenet s value, distance along the road, goes from 0 to 6945.554.
+[//]: # (Image References)
 
-## Basic Build Instructions
-
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./path_planning`.
-
-Here is the data provided from the Simulator to the C++ Program
-
-#### Main car's localization Data (No Noise)
-
-["x"] The car's x position in map coordinates
-
-["y"] The car's y position in map coordinates
-
-["s"] The car's s position in frenet coordinates
-
-["d"] The car's d position in frenet coordinates
-
-["yaw"] The car's yaw angle in the map
-
-["speed"] The car's speed in MPH
-
-#### Previous path data given to the Planner
-
-//Note: Return the previous list but with processed points removed, can be a nice tool to show how far along
-the path has processed since last time. 
-
-["previous_path_x"] The previous list of x points previously given to the simulator
-
-["previous_path_y"] The previous list of y points previously given to the simulator
-
-#### Previous path's end s and d values 
-
-["end_path_s"] The previous list's last point's frenet s value
-
-["end_path_d"] The previous list's last point's frenet d value
-
-#### Sensor Fusion Data, a list of all other car's attributes on the same side of the road. (No Noise)
-
-["sensor_fusion"] A 2d vector of cars and then that car's [car's unique ID, car's x position in map coordinates, car's y position in map coordinates, car's x velocity in m/s, car's y velocity in m/s, car's s position in frenet coordinates, car's d position in frenet coordinates. 
-
-## Details
-
-1. The car uses a perfect controller and will visit every (x,y) point it recieves in the list every .02 seconds. The units for the (x,y) points are in meters and the spacing of the points determines the speed of the car. The vector going from a point to the next point in the list dictates the angle of the car. Acceleration both in the tangential and normal directions is measured along with the jerk, the rate of change of total Acceleration. The (x,y) point paths that the planner recieves should not have a total acceleration that goes over 10 m/s^2, also the jerk should not go over 50 m/s^3. (NOTE: As this is BETA, these requirements might change. Also currently jerk is over a .02 second interval, it would probably be better to average total acceleration over 1 second and measure jerk from that.
-
-2. There will be some latency between the simulator running and the path planner returning a path, with optimized code usually its not very long maybe just 1-3 time steps. During this delay the simulator will continue using points that it was last given, because of this its a good idea to store the last points you have used so you can have a smooth transition. previous_path_x, and previous_path_y can be helpful for this transition since they show the last points given to the simulator controller with the processed points already removed. You would either return a path that extends this previous path or make sure to create a new path that has a smooth transition with this last path.
-
-## Tips
-
-A really helpful resource for doing this project and creating smooth trajectories was using http://kluge.in-chemnitz.de/opensource/spline/, the spline function is in a single hearder file is really easy to use.
+[image1]: ./writeup_images/simulator.png "Simulator screenshot "
 
 ---
 
-## Dependencies
+## Writeup / README
 
-* cmake >= 3.5
-  * All OSes: [click here for installation instructions](https://cmake.org/install/)
-* make >= 4.1
-  * Linux: make is installed by default on most Linux distros
-  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
-  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
-* gcc/g++ >= 5.4
-  * Linux: gcc / g++ is installed by default on most Linux distros
-  * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)
-  * Windows: recommend using [MinGW](http://www.mingw.org/)
-* [uWebSockets](https://github.com/uWebSockets/uWebSockets)
-  * Run either `install-mac.sh` or `install-ubuntu.sh`.
-  * If you install from source, checkout to commit `e94b6e1`, i.e.
-    ```
-    git clone https://github.com/uWebSockets/uWebSockets 
-    cd uWebSockets
-    git checkout e94b6e1
-    ```
+I build my control module in several iterations.
 
-## Editor Settings
+The first challenge was to get the car to drive around the track. I tried the naive approach of just iterating with the `s` position, and converting the location with the `getXY` function to x,y coordinates. Unfortunately getXY uses a simple linear interpolation between the map points provided, which caused sharp turns at each waypoint, and this movement exceeded the acceleration and jerk limits set by the simulator.
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+Then I tried creating a smooth interpolation of the waypoints with three parallel tracks for the three lanes. This proved challenging as this is a round course and I couldn't just feed the cordinates into a spline interpolation without creating overlapping ranges.
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+Finally I decided to interpolate just the upcoming path with spline. I fought a bit with the exact implementation of rotating the coordinate system so I got non-overlapping x coordinates for the spline interpolation. Finally I checked the Q&A page and found the formula I needed for a working rotation/translation.
 
-## Code Style
+Next was speed control. I implemented a simple algorithm using a target speed, a maximum permitted acceleration and an "urgency factor". The code will iteratively increase or decrease the current speed of the car when calculating each path point. The change speed (acceleration) will be determined by multiplying this "urgency factor" with the maximum permitted acceleration, which was chosen to be 9 m/s2, leaving 1 m/s2 room for acceleration due to other factors such as turns and rounding errors. 
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+The urgency is set to 0.5 (4.5 m/s2 acceleration) when starting out or when a lane opens up. If we encounter a car in front of our car, the code calculates the necessary minimum deceleration to match the lead vehicle speed and sets the target speed and urgency factor accordingly to maximize comfort. 
 
-## Project Instructions and Rubric
+The next challenge was to switch lanes. It turned out that this was surprisingly simple to implement, just changing the goal of the upcoming path to a different lane automatically gave me the curves needed for the lane change. Therefore I didn't need to use the jerk minimalization formula from the course.
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+The last challenge was to select the optimal lane. I tried several different approaches, but finally settled on a simple formula of looking at each lane for the next 60 meters, determining the minimum speed of cars in the lane in that range, and selecting the lane with the highest speed. The 60 meter lookahead was selected to minimize the chance of getting stuck behind two cars going at near the same speed. 60 m is enough to allow for the car to get around a slow car and then get back to the original lane. A longer distance gave a pessimistic outlook and prevented the car from shifting to a lane where there was a slow car in the distance. On the other hand anything shorter than that often caused the car to switch to a lane and then get stuck behind a slow car in that lane. This algorithm isn't very elegant, but it worked better than slightly more sophisticated approaches trying to predict a path between the vehicles, especially thanks to the drivers who kept accelerating and braking continuously, causing prediction complications. Probably it would be possible to get a planner working, but for now the simple approach works surprisingly well.
 
 
-## Call for IDE Profiles Pull Requests
+## Testing
 
-Help your fellow students!
+I ran the simulation for many laps, and it proved quite stable. 
 
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to ensure
-that students don't feel pressured to use one IDE or another.
+There is one situation that it doesn't handle yet: if a slow car comes into out lane within the braking distance, and the other lanes has a car nearby, the code realizes that we are going to crash into it, but instead of swerving to avoid the dangerous driver, it just triggers a deceleration stronger than 10 m/s2. Unfortunately this case is rare enough so debugging a better algorithm was more time consuming than my patience allowed. It would be nice if I could set up certain scenarios in the simulator (for example by being able to control two cars instead of just one).
 
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
+There was one more situation that could use improvement: if, for example we are in the rightmost lane behind a slow car, and there is another slow car in the center lane, the right approach would be to slow down, get behind the car in the center lane and then switch to the leftmost lane. With the current lane selection algorithm it almost never happens, but when it does, it would be nice to have a "stuck mode" avoidance algorithm.
 
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
+![image1]
