@@ -22,7 +22,7 @@ Then I tried creating a smooth interpolation of the waypoints with three paralle
 
 Finally I decided to interpolate just the upcoming path with spline. I fought a bit with the exact implementation of rotating the coordinate system so I got non-overlapping x coordinates for the spline interpolation. Finally I checked the Q&A page and found the formula I needed for a working rotation/translation.
 
-Next was speed control. I implemented a simple algorithm using a target speed, a maximum permitted acceleration and an "urgency factor". The code will iteratively increase or decrease the current speed of the car when calculating each path point. The change speed (acceleration) will be determined by multiplying this "urgency factor" with the maximum permitted acceleration, which was chosen to be 9 m/s<sup>2</sup>, leaving 1 m/s<sup>2 room for acceleration due to other factors such as turns and rounding errors. 
+Next was speed control. I implemented a simple algorithm using a target speed, a maximum permitted acceleration and an "urgency factor". The code will iteratively increase or decrease the current speed of the car when calculating each path point. The change speed (acceleration) will be determined by multiplying this "urgency factor" with the maximum permitted acceleration, which was chosen to be 9 m/s<sup>2</sup>, leaving 1 m/s<sup>2</sup> room for acceleration due to other factors such as turns and rounding errors. 
 
 The urgency is set to 0.5 (4.5 m/s<sup>2</sup> acceleration) when starting out or when a lane opens up. If we encounter a car in front of our car, the code calculates the necessary minimum deceleration to match the lead vehicle speed and sets the target speed and urgency factor accordingly to maximize comfort. 
 
