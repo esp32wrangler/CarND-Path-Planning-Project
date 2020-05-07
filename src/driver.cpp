@@ -197,7 +197,7 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
             //std::cout << "extended braking2 " << std::endl;
           }
           avoidance_urgency = (required_deceleration*simulator_frame_time)/max_delta_v_per_frame;
-          if (dist_to_other < following_distance && avoidance_urgency < 0.1)
+          if (dist_to_other < following_distance && avoidance_urgency < 0.3)
           {
             avoidance_urgency += 0.3;
             //std::cout << " too close ";
