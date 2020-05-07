@@ -32,6 +32,7 @@ protected:
   double target_speed;
   double current_speed;
   double speed_urgency;
+  double following_distance;
   
   void prepareSplines();
 

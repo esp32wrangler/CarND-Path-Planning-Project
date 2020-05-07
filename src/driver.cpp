@@ -24,6 +24,7 @@ Driver::Driver(const char*  mapfilename)
   target_speed = ref_speed;
   speed_urgency = 0.5;
   current_speed = 0;
+  following_distance = 20;
 }
 
 void Driver::loadMap(const char* fname)
@@ -91,9 +92,11 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
   }
   
   bool car_in_front = false;
+  double car_in_front_distance = -1;
   
   vector<double>lane_speeds(3, ref_speed);
   vector<bool>lane_available(3, true);
+  vector<bool>lane_marginally_available(3, true);
   vector<vector<double>>carpos(3);
   
   double avoidance_speed = 0;
@@ -136,7 +139,7 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
 //    std::cout << "other s" << other_s << " other speed " << other_speed << " distance " << other_s - car_s << std::endl;
 
     carpos[other_lane].push_back(dist_to_other);
-    if (other_s > car_s-10) {
+    if (dist_to_other > -10) {
       if (dist_to_other < 60) // if there is a slow car just beyond the 30 m limit, give a chance to pass the car in front and get back to our lane
       {
         if (other_speed < lane_speeds[other_lane])
@@ -148,6 +151,10 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
       {
         lane_available[other_lane] = false;
       }
+    }
+    if (dist_to_other > -5  && dist_to_other < 15 )
+    {
+      lane_marginally_available[other_lane] = false;
     }
     
     double dangerzone_min = 2 + 4*lane - 2;
@@ -165,19 +172,43 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
     if (other_d < dangerzone_max && other_d > dangerzone_min) {
       if (other_s > car_s && dist_to_other < 30)
       {
-        // collision danger
-        avoidance_speed = other_speed;
-        if (other_s-car_s < 5)
+        if (!car_in_front || dist_to_other < car_in_front_distance)
         {
-          avoidance_speed -= 1;
-        }
-        double required_deceleration = -1* (other_speed*other_speed - current_speed*current_speed)/(2*(other_s-car_s));
-        avoidance_urgency = (required_deceleration*simulator_frame_time)/max_delta_v_per_frame;
-        assert (car_in_front == false);
-        car_in_front = true;
-        if (speed_urgency > 1)
-        {
-          std::cout << " about to crash "; // TODO: deal with this situation
+          // collision danger
+          avoidance_speed = other_speed;
+          if (dist_to_other < following_distance)
+          {
+            avoidance_speed -= 1;
+            //std::cout << " too close ";
+          }
+          double old_required_deceleration = -1* (other_speed*other_speed - current_speed*current_speed)/(2*(other_s-car_s));
+          double distance_to_break = (dist_to_other > following_distance) ? dist_to_other-following_distance : 1;
+          double required_deceleration = pow(current_speed-other_speed, 2) / (2*distance_to_break);
+          if (required_deceleration > 5)
+          {
+            distance_to_break = (dist_to_other > following_distance/2) ? dist_to_other-(following_distance/2) : 1;
+            required_deceleration = pow(current_speed-other_speed, 2) / (2*distance_to_break);
+            //std::cout << "extended braking " << std::endl;
+          }
+          if (required_deceleration > 9)
+          {
+            distance_to_break = (dist_to_other > following_distance/10) ? dist_to_other-(following_distance/10) : 1;
+            required_deceleration = pow(current_speed-other_speed, 2) / (2*distance_to_break);
+            //std::cout << "extended braking2 " << std::endl;
+          }
+          avoidance_urgency = (required_deceleration*simulator_frame_time)/max_delta_v_per_frame;
+          if (dist_to_other < following_distance && avoidance_urgency < 0.1)
+          {
+            avoidance_urgency += 0.3;
+            //std::cout << " too close ";
+          }
+          car_in_front = true;
+          car_in_front_distance = dist_to_other;
+          //std::cout << "ur " << avoidance_urgency << " sp " << current_speed << " osp " << other_speed << " dist " << dist_to_other << " db " << distance_to_break << " a " << required_deceleration << "(" << old_required_deceleration << " l " << lane << std::endl;
+          if (speed_urgency > 1)
+          {
+            //std::cout << " about to crash "; // TODO: deal with this situation
+          }
         }
       }
     }
@@ -209,10 +240,14 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
       int best_lane = lane;
       if (alt_lane < 3 and alt_lane >= 0)
       {
-        if (lane_speeds[alt_lane] > best_speed && lane_available[alt_lane])
+        if (lane_speeds[alt_lane] > best_speed && (lane_available[alt_lane] || (lane_marginally_available[alt_lane] && avoidance_urgency > 0.9)))
         {
           best_speed = lane_speeds[alt_lane];
           best_lane = alt_lane;
+          if (avoidance_urgency > 0.9)
+          {
+            //std::cout << "marginal lane " << alt_lane << std::endl;
+          }
         }
       }
       if (best_lane != lane)
@@ -225,6 +260,10 @@ std::pair<std::vector<double>, std::vector<double>> Driver::getTrajectory(const 
     {
       target_speed = avoidance_speed;
       speed_urgency = avoidance_urgency;
+      if (avoidance_urgency > 1)
+      {
+        avoidance_urgency = 1; // hope for the best
+      }
     }
   }
   else
